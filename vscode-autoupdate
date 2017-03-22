@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php
+# load sources
+$sources = array();
+$sourcesFile = fopen('sources.csv', 'r');
+while ($source = fgetcsv($sourcesFile)) {
+    $sources[$source[0]][$source[1]] = $source[2];
+}
+fclose($sourcesFile);
+
+# check source
+$os = strtolower(trim(explode(':', shell_exec('lsb_release -i'))[1]));
+$arch = str_replace('x86_64', 'amd64', trim(shell_exec('uname -m')));
+echo 'Detected OS: ' . $os . ' (' . $arch . ')' . PHP_EOL;
+if (isset($sources[$os][$arch])) {
+    echo 'Info: os_arch found in sources!' . PHP_EOL;
+} else {
+    echo 'Critical: os_arch not found in sources!' . PHP_EOL;
+    exit(-1);
+}
+
+# download
+echo 'Downloading... ' ;
+file_put_contents("/tmp/vscode.deb", fopen($sources[$os][$arch], 'r'));
+echo '[DONE!]' . PHP_EOL;
+
+# execute
+switch ($os) {
+    case 'debian':
+        passthru('dpkg -i /tmp/vscode.deb && apt-get install code -f -y');
+        break;
+    //write here support for your linux!
+}
+unlink('/tmp/vscode.deb');
+exit(0);
