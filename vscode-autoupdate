@@ -1,35 +1,48 @@
 #!/usr/bin/env php
 <?php
-# load sources
-$sources = array();
-$sourcesFile = fopen('sources.csv', 'r');
-while ($source = fgetcsv($sourcesFile)) {
-    $sources[$source[0]][$source[1]] = $source[2];
-}
-fclose($sourcesFile);
+$distros = [
+    'ubuntu' => 'deb',
+    'debian' => 'deb',
+    'fedora' => 'rpm',
+    'red hat' => 'rpm',
+    'redhat' => 'rpm'
+];
+
+$archs = [
+    'x86' => 'x86',
+    'amd64' => 'x64',
+];
 
 # check source
 $os = strtolower(trim(explode(':', shell_exec('lsb_release -i'))[1]));
 $arch = str_replace('x86_64', 'amd64', trim(shell_exec('uname -m')));
 echo 'Detected OS: ' . $os . ' (' . $arch . ')' . PHP_EOL;
-if (isset($sources[$os][$arch])) {
-    echo 'Info: os_arch found in sources!' . PHP_EOL;
-} else {
-    echo 'Critical: os_arch not found in sources!' . PHP_EOL;
+if (!isset($distros[$os])) {
+    echo 'Unsupported OS!' . PHP_EOL;
     exit(-1);
 }
 
+if (!isset($archs[$arch])) {
+    echo 'Unsupported arch!' . PHP_EOL;
+    exit(-2);
+}
+
+$distroType = $distros[$os];
+$url = 'https://vscode-update.azurewebsites.net/latest/linux-' .$distroType. '-'.$archs[$arch].'/stable';
+
 # download
 echo 'Downloading... ' ;
-file_put_contents("/tmp/vscode.deb", fopen($sources[$os][$arch], 'r'));
+$tmpFile = '/tmp/vscode.' . $distroType;
+file_put_contents($tmpFile, fopen($url, 'r'));
 echo '[DONE!]' . PHP_EOL;
 
 # execute
-switch ($os) {
-    case 'debian':
-        passthru('dpkg -i /tmp/vscode.deb && apt-get install code -f -y');
+switch ($distroType) {
+    case 'deb':
+        passthru('dpkg -i '.$tmpFile.' && apt-get install code -f -y');
         break;
-    //write here support for your linux!
+    case 'rpm':
+        passthru('rpm -i '.$tmpFile);
 }
-unlink('/tmp/vscode.deb');
+unlink($tmpFile);
 exit(0);

@@ -22,6 +22,8 @@ It is also possible to run it in cron - for instance if you wish to autoupdate
 ```
 (entry above will work only if you put your files in `/opt/vscode-autoupdate`).
 
+Warning: be sure to set it for root's crontab or edit your sudoers file!
+
 installation
 ============
 
@@ -31,12 +33,3 @@ chmod +x vscode-autoupdate
 ```
 
 PHP 5.3 or above is required.
-
-sources
-=======
-
-Script is using source links from the `sources.csv` file, if your architecture
-is not included there please add the link from `https://code.visualstudio.com/`.
-If you have a different distro than `Debian` please update the installation
-switch in `vscode-autoupdate` - together we can build a nice autoupdate script.
-
