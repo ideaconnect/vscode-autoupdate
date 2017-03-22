@@ -42,7 +42,7 @@ switch ($distroType) {
         passthru('dpkg -i '.$tmpFile.' && apt-get install code -f -y');
         break;
     case 'rpm':
-        passthru('rpm -i '.$tmpFile);
+        passthru('rpm -i '.$tmpFile.' && yum install code');
 }
 unlink($tmpFile);
 exit(0);
